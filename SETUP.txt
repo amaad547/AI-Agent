@@ -1,0 +1,134 @@
+=====================================================
+AI STUDY AGENT - SETUP GUIDE
+=====================================================
+
+STEP 1: CREATE FOLDER
+----------------------
+1. Create a new folder on your Desktop
+2. Name it: "study-agent"
+
+
+STEP 2: SAVE FILES
+------------------
+Save these 4 files in the "study-agent" folder:
+
+1. index.html       (Main HTML file)
+2. styles.css       (Styling)
+3. script.js        (Agent logic)
+4. README.md        (Documentation)
+
+
+STEP 3: FILE STRUCTURE SHOULD LOOK LIKE THIS
+--------------------------------------------
+study-agent/
+├── index.html
+├── styles.css
+├── script.js
+└── README.md
+
+
+STEP 4: OPEN AND TEST
+---------------------
+1. Double-click "index.html"
+2. It will open in your browser
+3. You should see the AI Study Agent interface
+4. Type: "Give me PYQ on Electricity"
+5. Click Send
+6. See demo response!
+
+
+STEP 5 (OPTIONAL): ADD REAL API KEY
+-----------------------------------
+If you want real AI (not demo):
+
+1. Go to: https://console.anthropic.com
+2. Sign up (FREE $5 credits)
+3. Click "API Keys" in sidebar
+4. Click "Create Key"
+5. Copy the key (starts with sk-ant-...)
+
+6. Open "script.js" with Notepad/TextEdit
+7. Find line 5: const API_KEY = 'YOUR_API_KEY_HERE';
+8. Replace with: const API_KEY = 'sk-ant-your-key-here';
+
+9. Find line 6: const USE_DEMO_MODE = true;
+10. Change to: const USE_DEMO_MODE = false;
+
+11. Save the file
+12. Refresh browser (F5)
+13. Done! Now using real AI
+
+
+QUICK TROUBLESHOOTING
+----------------------
+
+Problem: Files not loading?
+Solution: Make sure all files are in the SAME FOLDER
+
+Problem: CSS not working?
+Solution: Check file is named exactly "styles.css" (not styles.css.txt)
+
+Problem: JavaScript not working?
+Solution: Check file is named exactly "script.js" (not script.js.txt)
+
+Problem: API key not working?
+Solution: Copy key again, check for extra spaces
+
+
+TESTING CHECKLIST
+-----------------
+[ ] index.html opens in browser
+[ ] You see purple gradient background
+[ ] Four mode buttons are visible
+[ ] Chat interface loads
+[ ] You can type in the input box
+[ ] Send button works
+[ ] Demo responses appear
+
+If all checked ✓ - You're ready for demo!
+
+
+FOR HACKATHON DEMO
+------------------
+
+Best queries to show judges:
+
+1. "Give me PYQ questions on Electricity"
+   → Shows structured exam-style output
+
+2. "Explain photosynthesis"
+   → Shows concept mode with examples
+
+3. "Practice questions on quadratic equations"
+   → Shows progressive difficulty
+
+4. Resize browser window
+   → Shows responsive design
+
+
+MOBILE TESTING
+--------------
+1. Upload folder to Google Drive
+2. Open index.html from phone browser
+3. Test all 4 modes
+4. Check button layout (should be 2x2 grid)
+
+
+JUDGE DEMO TIPS
+---------------
+1. Start with explaining the "Agent" concept
+2. Show intent parsing live
+3. Demonstrate mode switching
+4. Show responsive design
+5. Explain structured prompts
+
+
+CONTACT FOR HELP
+----------------
+If stuck, check:
+- README.md for detailed docs
+- script.js for inline comments
+- Browser console (F12) for errors
+
+
+Good luck with your hackathon! 🚀

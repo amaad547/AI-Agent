@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Study Agent - Class 10</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎓 AI Study Agent</h1>
+            <p>Your Smart Study Partner for Class 10</p>
+        </div>
+
+        <!-- Setup Screen -->
+        <div class="setup-screen" id="setupScreen">
+            <div class="setup-card">
+                <h2>Let's Get Started! 📚</h2>
+                
+                <div class="form-group">
+                    <label for="boardSelect">Select Your Board</label>
+                    <select id="boardSelect">
+                        <option value="">Choose Board</option>
+                        <option value="CBSE">CBSE</option>
+                        <option value="ICSE">ICSE</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="subjectSelect">Select Subject</label>
+                    <select id="subjectSelect">
+                        <option value="">Choose Subject</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Science">Science</option>
+                        <option value="Physics">Physics</option>
+                        <option value="Chemistry">Chemistry</option>
+                        <option value="Biology">Biology</option>
+                        <option value="English">English</option>
+                        <option value="Social Science">Social Science</option>
+                        <option value="History">History</option>
+                        <option value="Geography">Geography</option>
+                        <option value="Economics">Economics</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>What do you want to do?</label>
+                    <div class="mode-grid">
+                        <div class="mode-card" data-mode="pyq">
+                            <div class="icon">📝</div>
+                            <div class="title">PYQ Practice</div>
+                        </div>
+                        <div class="mode-card" data-mode="concept">
+                            <div class="icon">💡</div>
+                            <div class="title">Concept Explain</div>
+                        </div>
+                        <div class="mode-card" data-mode="practice">
+                            <div class="icon">✏️</div>
+                            <div class="title">Question Practice</div>
+                        </div>
+                        <div class="mode-card" data-mode="notes">
+                            <div class="icon">📚</div>
+                            <div class="title">Short Notes</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="start-btn" id="startBtn" disabled>Start Learning 🚀</button>
+            </div>
+        </div>
+
+        <!-- Chat Screen -->
+        <div class="chat-screen hidden" id="chatScreen">
+            <div class="preferences-bar">
+                <div class="pref-item">
+                    <strong>Board:</strong> <span id="displayBoard">-</span>
+                </div>
+                <div class="pref-item">
+                    <strong>Subject:</strong> <span id="displaySubject">-</span>
+                </div>
+                <button class="change-btn" id="changePrefsBtn">Change Settings</button>
+            </div>
+
+            <div class="mode-selector">
+                <button class="mode-btn active" data-mode="pyq">📝 PYQ Practice</button>
+                <button class="mode-btn" data-mode="concept">💡 Concept Explain</button>
+                <button class="mode-btn" data-mode="practice">✏️ Question Practice</button>
+                <button class="mode-btn" data-mode="notes">📚 Short Notes</button>
+            </div>
+
+            <div class="chat-area" id="chatArea">
+                <div class="welcome-message">
+                    <h2>Welcome! 👋</h2>
+                    <p>I'm ready to help you study. Ask me anything!</p>
+                    <p style="margin-top: 15px; color: #667eea;">Try: "Explain quadratic equations" or "Give me practice questions"</p>
+                </div>
+            </div>
+
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="Ask me anything..." />
+                <button id="sendBtn">Send</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
