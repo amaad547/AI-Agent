@@ -297,7 +297,7 @@ Focus on ${board} Class 10 ${subject} exam requirements.`;
 
 async function callAgentAPI(prompt) {
     try {
-        const res = await fetch("http://127.0.0.1:5000/api/agent", {
+        const res = await fetch("https://study-agent-backend.onrender.com/api/agent", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
