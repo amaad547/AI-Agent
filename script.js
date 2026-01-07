@@ -119,7 +119,7 @@
             
             if (!message) return;
 
-            if (!USE_DEMO_MODE && API_KEY === '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') {
+            if (!USE_DEMO_MODE && API_KEY === '') {
                 alert('Please add your API key or enable demo mode!');
                 return;
             }
@@ -486,7 +486,7 @@ Three resistors: 2Ω, 3Ω in series, parallel with 6Ω. Voltage = 12V. Find curr
             warning.className = 'setup-warning';
             warning.innerHTML = `
                 <strong>ℹ️ Demo Mode Active</strong><br>
-                Using sample responses. Get API key from <a href="https://console.anthropic.com" target="_blank">console.anthropic.com</a> for real AI.
+                Using sample responses..
             `;
             chatArea.insertBefore(warning, chatArea.firstChild);
         }
