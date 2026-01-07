@@ -1,4 +1,21 @@
-console.log("🔥 UPDATED SCRIPT LOADED");
+function isStudyRelated(text) {
+    const studyKeywords = [
+        "class 10", "cbse", "icse",
+        "physics", "chemistry", "biology", "math", "mathematics",
+        "formula", "numerical", "derivation",
+        "explain", "define", "what is",
+        "chapter", "topic", "diagram",
+        "pyq", "previous year",
+        "notes", "short notes",
+        "practice", "question", "answer",
+        "exam", "revision"
+    ];
+
+    const lowerText = text.toLowerCase();
+
+    return studyKeywords.some(keyword => lowerText.includes(keyword));
+}
+
 
 // ============================================
 // CONFIGURATION
@@ -121,22 +138,32 @@ async function sendMessage() {
 
     if (!message) return;
 
-    /*if (!USE_DEMO_MODE && API_KEY === '') {
-        alert('Please add your API key or enable demo mode!');
-        return;
-    }*/
-
     input.value = '';
     document.getElementById('sendBtn').disabled = true;
 
     addUserMessage(message);
+
+    // ✅ GUARDRAIL CHECK
+    if (!isStudyRelated(message)) {
+        addAgentMessage(
+            "❌ I can only help with Class 10 study-related questions.\n\nPlease ask something from your syllabus like:\n• Explain a concept\n• PYQs\n• Practice questions\n• Short notes"
+        );
+        document.getElementById('sendBtn').disabled = false;
+        return;
+    }
+
     showLoading();
 
-    await processWithAgent(message);
+    try {
+        await processWithAgent(message);
+    } catch (error) {
+        addAgentMessage("⚠️ Something went wrong. Please try again.");
+    }
 
     hideLoading();
     document.getElementById('sendBtn').disabled = false;
 }
+
 
 // ============================================
 // AGENT LOGIC
