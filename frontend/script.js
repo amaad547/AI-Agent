@@ -250,7 +250,7 @@ function buildPrompt(mode, topic) {
 
     if (mode === "pyq") {
         return `You are a ${boardInfo} Class 10 question paper generator for ${subject}.
-Generate 3 previous year style questions for the topic: "${topic}".`;
+Generate 10 previous year style questions for the topic: "${topic}".`;
     }
 
     if (mode === "concept") {
@@ -258,7 +258,7 @@ Generate 3 previous year style questions for the topic: "${topic}".`;
     }
 
     if (mode === "practice") {
-        return `Generate 3 practice questions with answers for Class 10 ${subject} on "${topic}".`;
+        return `Generate 10 practice questions with answers for Class 10 ${subject} on "${topic}".`;
     }
 
     if (mode === "notes") {
@@ -505,14 +505,33 @@ function showLoading() {
 
 function downloadPDF(content) {
     const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+        unit: "pt",
+        format: "a4"
+    });
 
-    const lines = doc.splitTextToSize(content, 180);
-    doc.text(lines, 10, 10);
+    const lineHeight = 16;
+    const margin = 40;
+    const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
+    const maxHeight = doc.internal.pageSize.getHeight() - margin * 2;
+
+    const textLines = doc.splitTextToSize(content, maxWidth);
+
+    let y = margin;
+
+    textLines.forEach(line => {
+        if (y + lineHeight > maxHeight) {
+            doc.addPage();
+            y = margin;
+        }
+        doc.text(line, margin, y);
+        y += lineHeight;
+    });
 
     const filename = `boardmate_${Date.now()}.pdf`;
     doc.save(filename);
 }
+
 
 function convertHTMLToPlain(html) {
     return html
