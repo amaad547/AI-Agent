@@ -33,6 +33,19 @@ let userPreferences = {
 };
 let currentMode = 'pyq';
 
+let adaptiveTest = {
+    active: false,
+    questions: [],
+    userAnswers: [],
+    currentIndex: 0,
+    score: 0,
+    wrongTopics: []
+};
+
+adaptiveTest.total = 10;
+
+
+
 // ============================================
 // SETUP SCREEN LOGIC
 // ============================================
@@ -75,6 +88,15 @@ subjectSelect.addEventListener('change', function () {
 
 // Start button click
 startBtn.addEventListener('click', function () {
+    // Switch screens
+    setupScreen.classList.add('hidden');
+    chatScreen.classList.remove('hidden');
+    if (currentMode === "adaptive") {
+        startAdaptiveTest();
+        return;
+    }
+
+
     // Update display
     document.getElementById('displayBoard').textContent = userPreferences.board;
     document.getElementById('displaySubject').textContent = userPreferences.subject;
@@ -142,6 +164,11 @@ async function sendMessage() {
     document.getElementById('sendBtn').disabled = true;
 
     addUserMessage(message);
+    if (adaptiveTest.active) {
+        addAgentMessage("❗ During Adaptive Test no text input needed. Select MCQ option.");
+        return;
+    }
+
 
     // ✅ GUARDRAIL CHECK
     // if (!isStudyRelated(message)) {
@@ -447,7 +474,7 @@ function addAgentMessage(text, isHTML = false, mode = currentMode) {
     chatArea.scrollTop = chatArea.scrollHeight;
 
     // ❗ Add PDF button ONLY if not flowchart mode
-    if (mode !== "flowchart") {
+    if (mode !== "flowchart" && mode !== "adaptive") {
         const btn = document.createElement("button");
         btn.className = "pdf-btn";
         btn.textContent = "📄 Download PDF";
@@ -636,12 +663,143 @@ async function downloadFlowchart(div) {
     img.src = "data:image/svg+xml;base64," + btoa(xml);
 }
 
+////////////////////////////////////////////////////////////////////////////
+async function startAdaptiveTest() {
+    adaptiveTest.active = true;
+    adaptiveTest.questions = [];
+    adaptiveTest.currentIndex = 0;
+    adaptiveTest.score = 0;
+    adaptiveTest.wrongTopics = [];
+
+    addAgentMessage("🧠 Adaptive Test Started!\nTotal Questions: " + adaptiveTest.total);
+
+    await fetchAdaptiveQuestion();
+}
+
+async function fetchAdaptiveQuestion() {
+    const prompt = `
+Generate a Class 10 ${userPreferences.subject} MCQ with:
+Topic, Question, 4 options A B C D and Correct option.
+Format strictly:
+Topic: <topic>
+Q: <question>
+A) <text>
+B) <text>
+C) <text>
+D) <text>
+Answer: <A/B/C/D>
+`;
+
+    // AI CALL
+    const res = await callAgentAPI(prompt);
+
+    const q = parseMCQ(res);
+    adaptiveTest.questions.push(q);
+
+    displayMCQ(q);
+}
+
+function parseMCQ(text) {
+    return {
+        topic: text.match(/Topic:\s*(.*)/)[1],
+        question: text.match(/Q:\s*(.*)/)[1],
+        A: text.match(/A\)\s*(.*)/)[1],
+        B: text.match(/B\)\s*(.*)/)[1],
+        C: text.match(/C\)\s*(.*)/)[1],
+        D: text.match(/D\)\s*(.*)/)[1],
+        answer: text.match(/Answer:\s*([A-D])/)[1]
+    };
+}
+
+function displayMCQ(q) {
+    addAgentMessage(
+        `📍 Topic: ${q.topic}<br><br>
+        ❓ ${q.question}<br><br>
+        A) ${q.A}<br>
+        B) ${q.B}<br>
+        C) ${q.C}<br>
+        D) ${q.D}<br><br>
+        <div class="mcq-options" data-index="${adaptiveTest.currentIndex}">
+            <button class="mcq-btn" data-opt="A" onclick="markAnswer('A', ${adaptiveTest.currentIndex})">A</button>
+            <button class="mcq-btn" data-opt="B" onclick="markAnswer('B', ${adaptiveTest.currentIndex})">B</button>
+            <button class="mcq-btn" data-opt="C" onclick="markAnswer('C', ${adaptiveTest.currentIndex})">C</button>
+            <button class="mcq-btn" data-opt="D" onclick="markAnswer('D', ${adaptiveTest.currentIndex})">D</button>
+        </div>
+        `,
+        true
+    );
+}
+
+function markAnswer(opt, index) {
+    // record answer
+    adaptiveTest.userAnswers[index] = opt;
+
+    
+
+    // freeze current question buttons
+    const container = document.querySelector(`.mcq-options[data-index="${index}"]`);
+    if (container) {
+        const btns = container.querySelectorAll(".mcq-btn");
+        btns.forEach(btn => {
+            btn.disabled = true;
+            if (btn.dataset.opt === opt) {
+                btn.classList.add("selected");
+            }
+            btn.classList.add("disabled");
+        });
+    }
+
+    // move next
+    adaptiveTest.currentIndex++;
+
+    if (adaptiveTest.currentIndex < adaptiveTest.total) {
+        fetchAdaptiveQuestion();
+    } else {
+        finishAdaptiveTest();
+    }
+}
 
 
+function finishAdaptiveTest() {
+    adaptiveTest.active = false;
+
+    let correct = 0;
+    let analysis = "";
+
+    adaptiveTest.questions.forEach((q, i) => {
+        const userAns = adaptiveTest.userAnswers[i];
+        const right = (userAns === q.answer);
+
+        if (right) correct++;
+
+        analysis += `
+Q${i + 1}) 
+Your Answer: ${userAns}
+Correct Answer: ${q.answer}
+Result: ${right ? "✔️ Correct" : "❌ Wrong"}
+--------------------------
+`;
+    });
+
+    const weak = summarizeWeak(adaptiveTest.wrongTopics);
+
+    addAgentMessage(`
+📊 <b>Test Completed!</b><br><br>
+Score: ${correct}/${adaptiveTest.total}<br>
+Accuracy: ${(correct / adaptiveTest.total * 100).toFixed(1)}%<br><br>
+🧾 <b>Detailed Analysis:</b><br><pre>${analysis}</pre>
+`, true);
+}
 
 
+function summarizeWeak(list) {
+    const map = {};
+    list.forEach(t => map[t] = (map[t] || 0) + 1);
+    return Object.keys(map).sort((a, b) => map[b] - map[a]);
+}
 
 
+///////////////////////////////////////////////////////////////////////////
 
 
 function hideLoading() {
