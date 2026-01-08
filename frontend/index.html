@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BOARDMATE - Class 10</title>
     <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -17,7 +19,7 @@
         <div class="setup-screen" id="setupScreen">
             <div class="setup-card">
                 <h2>Let's Get Started! 📚</h2>
-                
+
                 <div class="form-group">
                     <label for="boardSelect">Select Your Board</label>
                     <select id="boardSelect">
@@ -63,6 +65,11 @@
                             <div class="icon">📚</div>
                             <div class="title">Short Notes</div>
                         </div>
+                        <div class="mode-card" data-mode="flowchart">
+                            <div class="icon">📊</div>
+                            <div class="title">Flowchart</div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -71,6 +78,9 @@
         </div>
 
         <!-- Chat Screen -->
+
+
+
         <div class="chat-screen hidden" id="chatScreen">
             <div class="preferences-bar">
                 <div class="pref-item">
@@ -82,18 +92,25 @@
                 <button class="change-btn" id="changePrefsBtn">Change Settings</button>
             </div>
 
+            <div class="mode-mobile-header">
+                <div class="hamburger-btn">☰</div>
+            </div>
+
             <div class="mode-selector">
                 <button class="mode-btn active" data-mode="pyq">📝 PYQ Practice</button>
                 <button class="mode-btn" data-mode="concept">💡 Concept Explain</button>
                 <button class="mode-btn" data-mode="practice">✏️ Question Practice</button>
                 <button class="mode-btn" data-mode="notes">📚 Short Notes</button>
+                <button class="mode-btn" data-mode="flowchart">📊 Flowchart</button>
+
             </div>
 
             <div class="chat-area" id="chatArea">
                 <div class="welcome-message">
                     <h2>Welcome! 👋</h2>
                     <p>I'm ready to help you study. Ask me anything!</p>
-                    <p style="margin-top: 15px; color: #667eea;">Try: "Explain quadratic equations" or "Give me practice questions"</p>
+                    <p style="margin-top: 15px; color: #667eea;">Try: "Explain quadratic equations" or "Give me practice
+                        questions"</p>
                 </div>
             </div>
 
@@ -103,8 +120,22 @@
             </div>
         </div>
     </div>
+    <!-- Mermaid Library (must be loaded before script.js) -->
+    <script type="module">
+        import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+        window.mermaid = mermaid; // 👈 Important: make it global
+        mermaid.initialize({ startOnLoad: false });
+    </script>
+
+    <!-- html2canvas for PNG download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
     <script src="script.js"></script>
+    <!-- jsPDF for PDF download -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
+
+
 </body>
+
 </html>

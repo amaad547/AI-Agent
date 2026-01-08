@@ -176,7 +176,11 @@ async function processWithAgent(userMessage) {
     const prompt = buildPrompt(mode, topic);
 
     const response = await callAgentAPI(prompt);
-    displayResponse(response, mode);
+    if (mode === "flowchart") {
+        displayFlowchart(response);
+    } else {
+        displayResponse(response, mode);
+    }
 }
 
 
@@ -233,6 +237,28 @@ Generate 3 previous year style questions for the topic: "${topic}".`;
     if (mode === "notes") {
         return `Create short revision notes for Class 10 ${subject} on the topic "${topic}".`;
     }
+
+    if (mode === "flowchart") {
+        return `
+    Create a well formatted Mermaid flowchart about topic "${topic}" with meaningful nodes.
+
+    STRICT RULES:
+    - MUST return only mermaid code block
+    - MUST include \`\`\`mermaid and ending \`\`\`
+    - Each connection must be on a NEW LINE
+    - Use: flowchart TD
+    - No explanations, no extra text
+    Example output strictly like:
+    \`\`\`mermaid
+    flowchart TD
+    Start --> Step1
+    Step1 --> Step2
+    Step2 --> End
+    \`\`\`
+    `;
+    }
+
+
 
     // default fallback
     return `Explain "${topic}" simply for a Class 10 ${subject} student.`;
@@ -360,8 +386,13 @@ Three resistors: 2Ω, 3Ω in series, parallel with 6Ω. Voltage = 12V. Find curr
 }
 
 function displayResponse(response, mode, intent) {
+    if (mode === "flowchart") {
+        renderMermaidFlowchart(response);
+        return;
+    }
+
     const formatted = formatByMode(response, mode);
-    addAgentMessage(formatted, true);
+    addAgentMessage(formatted, true, mode);
 }
 
 function formatByMode(text, mode) {
@@ -397,7 +428,7 @@ function addUserMessage(text) {
     chatArea.scrollTop = chatArea.scrollHeight;
 }
 
-function addAgentMessage(text, isHTML = false) {
+function addAgentMessage(text, isHTML = false, mode = currentMode) {
     const chatArea = document.getElementById('chatArea');
     const welcome = chatArea.querySelector('.welcome-message');
     if (welcome) welcome.remove();
@@ -409,20 +440,23 @@ function addAgentMessage(text, isHTML = false) {
         <div class="avatar">AI</div>
         <div class="message-content">
             ${isHTML ? text : escapeHtml(text)}
-            <br>
-            <button class="pdf-btn">📄 Download PDF</button>
         </div>
     `;
 
     chatArea.appendChild(messageDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
 
-    // PDF button logic
-    const btn = messageDiv.querySelector(".pdf-btn");
-    btn.addEventListener("click", () => {
-        let cleanText = convertHTMLToPlain(text);
-        downloadPDF(cleanText);
-    });
+    // ❗ Add PDF button ONLY if not flowchart mode
+    if (mode !== "flowchart") {
+        const btn = document.createElement("button");
+        btn.className = "pdf-btn";
+        btn.textContent = "📄 Download PDF";
+        btn.onclick = () => {
+            let cleanText = convertHTMLToPlain(text);
+            downloadPDF(cleanText);
+        };
+        messageDiv.querySelector(".message-content").appendChild(btn);
+    }
 }
 
 
@@ -461,6 +495,152 @@ function convertHTMLToPlain(html) {
         .trim();
 }
 
+async function renderMermaid(response) {
+    const codeMatch = response.match(/```mermaid([\s\S]*?)```/);
+    if (!codeMatch) {
+        addAgentMessage("❌ Invalid flowchart format");
+        return;
+    }
+
+    const diagramCode = codeMatch[1].trim();
+
+    const container = document.createElement("div");
+    container.className = "mermaid-chart";
+    container.innerHTML = diagramCode;
+
+    // render diagram
+    await mermaid.run({ querySelector: ".mermaid-chart" });
+
+    // Create wrapper + download button
+    const wrapper = document.createElement("div");
+    wrapper.appendChild(container);
+
+    const btn = document.createElement("button");
+    btn.className = "flowchart-download-btn";
+    btn.innerText = "📥 Download PNG";
+    btn.onclick = () => downloadMermaidPNG(container);
+
+    wrapper.appendChild(btn);
+
+    addAgentMessage(wrapper.outerHTML, true);
+}
+
+async function downloadMermaidPNG(element) {
+    const svg = element.querySelector("svg");
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const img = new Image();
+
+    img.onload = function () {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        const link = document.createElement("a");
+        link.download = `flowchart_${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+}
+
+
+async function downloadFlowchartAsPNG(element) {
+    const node = element.cloneNode(true);
+    node.querySelector(".flowchart-download-btn").remove();
+
+    document.body.appendChild(node);
+    const canvas = await html2canvas(node);
+    document.body.removeChild(node);
+
+    const link = document.createElement("a");
+    link.download = `flowchart_${Date.now()}.png`;
+    link.href = canvas.toDataURL();
+    link.click();
+}
+
+function extractMermaid(text) {
+    const match = text.match(/```mermaid([\s\S]*?)```/);
+    return match ? match[1].trim() : null;
+}
+
+function displayFlowchart(aiText) {
+    const code = extractMermaid(aiText);
+    if (!code) {
+        addAgentMessage("⚠️ Unable to generate valid flowchart. Try again.");
+        return;
+    }
+
+    const id = "mermaid_" + Date.now();
+
+    addAgentMessage(`<div id="${id}" class="flowchart-container">${code}</div>`, true);
+
+    setTimeout(() => {
+        mermaid.render(id + "_svg", code)
+            .then(({ svg }) => {
+                document.getElementById(id).innerHTML = svg;
+                addDownloadButton(id);
+            });
+    }, 200);
+}
+
+
+function addDownloadButton(divId) {
+    const div = document.getElementById(divId);
+    const btn = document.createElement("button");
+    btn.className = "download-btn";
+    btn.innerText = "📥 Download PNG";
+    btn.onclick = () => downloadFlowchart(div);
+    div.appendChild(btn);
+}
+
+async function downloadFlowchart(div) {
+    const svg = div.querySelector("svg");
+
+    // Clone SVG for export
+    const clone = svg.cloneNode(true);
+
+    // 🟣 Fix width/height
+    const bbox = svg.getBBox();
+    clone.setAttribute("width", bbox.width);
+    clone.setAttribute("height", bbox.height);
+    clone.setAttribute("viewBox", `${bbox.x} ${bbox.y} ${bbox.width} ${bbox.height}`);
+
+    const xml = new XMLSerializer().serializeToString(clone);
+    const img = new Image();
+
+    img.onload = () => {
+        const scale = 3; // HD SCALE
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+
+        const ctx = canvas.getContext("2d");
+
+        // White background
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Scale before drawing
+        ctx.scale(scale, scale);
+        ctx.drawImage(img, 0, 0);
+
+        const link = document.createElement("a");
+        link.download = "flowchart.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    };
+
+    img.src = "data:image/svg+xml;base64," + btoa(xml);
+}
+
+
+
+
+
+
 
 
 
@@ -485,3 +665,17 @@ function showDemoWarning() {
             `;
     chatArea.insertBefore(warning, chatArea.firstChild);
 }
+
+
+// === MOBILE NAVIGATION ===
+const hamburger = document.querySelector(".hamburger-btn");
+const modeMenu = document.querySelector(".mode-selector");
+
+hamburger?.addEventListener("click", () => {
+    if (modeMenu.style.display === "flex") {
+        modeMenu.style.display = "none";
+    } else {
+        modeMenu.style.display = "flex";
+        modeMenu.style.flexDirection = "column";
+    }
+});
