@@ -1,20 +1,20 @@
-function isStudyRelated(text) {
-    const studyKeywords = [
-        "class 10", "cbse", "icse",
-        "physics", "chemistry", "biology", "math", "mathematics",
-        "formula", "numerical", "derivation",
-        "explain", "define", "what is",
-        "chapter", "topic", "diagram",
-        "pyq", "previous year",
-        "notes", "short notes",
-        "practice", "question", "answer",
-        "exam", "revision"
-    ];
+// function isStudyRelated(text) {
+//     const studyKeywords = [
+//         "class 10", "cbse", "icse",
+//         "physics", "chemistry", "biology", "math", "mathematics",
+//         "formula", "numerical", "derivation",
+//         "explain", "define", "what is",
+//         "chapter", "topic", "diagram",
+//         "pyq", "previous year",
+//         "notes", "short notes",
+//         "practice", "question", "answer",
+//         "exam", "revision"
+//     ];
 
-    const lowerText = text.toLowerCase();
+//     const lowerText = text.toLowerCase();
 
-    return studyKeywords.some(keyword => lowerText.includes(keyword));
-}
+//     return studyKeywords.some(keyword => lowerText.includes(keyword));
+// }
 
 
 // ============================================
@@ -144,13 +144,13 @@ async function sendMessage() {
     addUserMessage(message);
 
     // ✅ GUARDRAIL CHECK
-    if (!isStudyRelated(message)) {
-        addAgentMessage(
-            "❌ I can only help with Class 10 study-related questions.\n\nPlease ask something from your syllabus like:\n• Explain a concept\n• PYQs\n• Practice questions\n• Short notes"
-        );
-        document.getElementById('sendBtn').disabled = false;
-        return;
-    }
+    // if (!isStudyRelated(message)) {
+    //     addAgentMessage(
+    //         "❌ I can only help with Class 10 study-related questions.\n\nPlease ask something from your syllabus like:\n• Explain a concept\n• PYQs\n• Practice questions\n• Short notes"
+    //     );
+    //     document.getElementById('sendBtn').disabled = false;
+    //     return;
+    // }
 
     showLoading();
 
@@ -169,12 +169,17 @@ async function sendMessage() {
 // AGENT LOGIC
 // ============================================
 async function processWithAgent(userMessage) {
-    const intent = parseIntent(userMessage);
-    const selectedMode = intent.mode || currentMode;
-    const prompt = buildPrompt(selectedMode, intent);
+    const topic = userMessage.trim();
+    const mode = currentMode; // mode from UI selection
+
+    // Build prompt based on mode + topic
+    const prompt = buildPrompt(mode, topic);
+
     const response = await callAgentAPI(prompt);
-    displayResponse(response, selectedMode, intent);
+    displayResponse(response, mode);
 }
+
+
 
 function parseIntent(message) {
     const intent = {
@@ -204,96 +209,35 @@ function parseIntent(message) {
     return intent;
 }
 
-function buildPrompt(mode, intent) {
+function buildPrompt(mode, topic) {
     const board = userPreferences.board;
     const subject = userPreferences.subject;
-    const topic = intent.topic || 'general topics';
 
-    const boardInfo = board === 'ICSE'
-        ? 'ICSE (Indian Certificate of Secondary Education)'
-        : 'CBSE (Central Board of Secondary Education)';
+    const boardInfo = (board === "ICSE")
+        ? "ICSE (Indian Certificate of Secondary Education)"
+        : "CBSE (Central Board of Secondary Education)";
 
-    switch (mode) {
-        case 'pyq':
-            return `You are a ${boardInfo} Class 10 exam paper creator for ${subject}.
-Generate 3 previous year style questions on "${topic}".
-
-Follow this EXACT structure:
-
-**Section A - Multiple Choice (1 mark)**
-Create 1 MCQ with 4 options. Mark correct answer with ✓
-
-**Section B - Short Answer (3 marks)**
-Create 1 question requiring explanation or diagram.
-
-**Section C - Long Answer (5 marks)**
-Create 1 detailed question.
-
-**Marking Scheme**
-Show mark distribution for each question.
-
-Use ${board} Class 10 ${subject} syllabus. Make questions exam-realistic.`;
-
-        case 'concept':
-            return `Explain "${topic}" to a ${board} Class 10 ${subject} student.
-
-Structure:
-
-**Simple Definition**
-What is it in simple words?
-
-**How It Works**
-Break into 3-4 clear steps
-
-**Real-Life Example**
-Give a relatable example
-
-**Common Mistakes**
-What students get wrong
-
-Use ${board} Class 10 ${subject} terminology. Keep it simple.`;
-
-        case 'practice':
-            return `Create 3 practice questions on "${topic}" for ${board} Class 10 ${subject}.
-
-**Question 1** [Easy]
-Basic application
-
-**Question 2** [Medium]
-Requires understanding
-
-**Question 3** [Hard]
-Combines concepts
-
-Include:
-💡 Hint: (clue without full answer)
-✓ Answer: (with explanation)
-
-Match ${board} syllabus for Class 10 ${subject}.`;
-
-        case 'notes':
-            return `Create quick revision notes on "${topic}" for ${board} Class 10 ${subject}.
-
-Format:
-
-**📌 Key Definitions**
-3-4 important terms
-
-**⚡ Must-Know Formulas/Rules**
-Essential formulas
-
-**🎯 Quick Points**
-5-6 bullet points
-
-**🧠 Memory Trick**
-One mnemonic
-
-Focus on ${board} Class 10 ${subject} exam requirements.`;
-
-        default:
-            return `Help a ${board} Class 10 ${subject} student with: ${topic}`;
+    if (mode === "pyq") {
+        return `You are a ${boardInfo} Class 10 question paper generator for ${subject}.
+Generate 3 previous year style questions for the topic: "${topic}".`;
     }
+
+    if (mode === "concept") {
+        return `Explain the concept "${topic}" to a ${board} Class 10 ${subject} student in simple terms.`;
+    }
+
+    if (mode === "practice") {
+        return `Generate 3 practice questions with answers for Class 10 ${subject} on "${topic}".`;
+    }
+
+    if (mode === "notes") {
+        return `Create short revision notes for Class 10 ${subject} on the topic "${topic}".`;
+    }
+
+    // default fallback
+    return `Explain "${topic}" simply for a Class 10 ${subject} student.`;
 }
+
 
 async function callAgentAPI(prompt) {
     try {
