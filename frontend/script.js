@@ -844,6 +844,9 @@ function showDemoWarning() {
 }
 
 
+
+
+
 // === MOBILE NAVIGATION ===
 const hamburger = document.querySelector(".hamburger-btn");
 const modeMenu = document.querySelector(".mode-selector");
@@ -855,4 +858,11 @@ hamburger?.addEventListener("click", () => {
         modeMenu.style.display = "flex";
         modeMenu.style.flexDirection = "column";
     }
+
+
+
+    
 });
+
+
+
