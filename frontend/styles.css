@@ -268,6 +268,19 @@
             animation: slideIn 0.3s ease-out;
         }
 
+        .pdf-btn {
+            margin-top: 8px;
+            padding: 6px 12px;
+            background: #4c6ef5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .pdf-btn:hover {
+            background: #364fc7;
+        }
         @keyframes slideIn {
             from {
                 opacity: 0;

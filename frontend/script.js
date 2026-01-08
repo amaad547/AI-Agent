@@ -404,13 +404,28 @@ function addAgentMessage(text, isHTML = false) {
 
     const messageDiv = document.createElement('div');
     messageDiv.className = 'message agent';
+
     messageDiv.innerHTML = `
-                <div class="avatar">AI</div>
-                <div class="message-content">${isHTML ? text : escapeHtml(text)}</div>
-            `;
+        <div class="avatar">AI</div>
+        <div class="message-content">
+            ${isHTML ? text : escapeHtml(text)}
+            <br>
+            <button class="pdf-btn">📄 Download PDF</button>
+        </div>
+    `;
+
     chatArea.appendChild(messageDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
+
+    // PDF button logic
+    const btn = messageDiv.querySelector(".pdf-btn");
+    btn.addEventListener("click", () => {
+        let cleanText = convertHTMLToPlain(text);
+        downloadPDF(cleanText);
+    });
 }
+
+
 
 function showLoading() {
     const chatArea = document.getElementById('chatArea');
@@ -426,6 +441,28 @@ function showLoading() {
     chatArea.appendChild(loadingDiv);
     chatArea.scrollTop = chatArea.scrollHeight;
 }
+
+function downloadPDF(content) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    const lines = doc.splitTextToSize(content, 180);
+    doc.text(lines, 10, 10);
+
+    const filename = `boardmate_${Date.now()}.pdf`;
+    doc.save(filename);
+}
+
+function convertHTMLToPlain(html) {
+    return html
+        .replace(/<\/?strong>/g, '')        // remove <strong>
+        .replace(/<br\s*\/?>/gi, '\n')      // convert <br> to newline
+        .replace(/<[^>]*>/g, '')            // remove remaining HTML tags
+        .trim();
+}
+
+
+
 
 function hideLoading() {
     const loading = document.getElementById('loadingMessage');
