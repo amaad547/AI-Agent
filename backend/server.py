@@ -6,7 +6,7 @@ import os
 app = Flask(__name__)
 CORS(app)
 
-client = Groq(api_key='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')
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 @app.route("/api/agent", methods=["POST"])
 def agent():
